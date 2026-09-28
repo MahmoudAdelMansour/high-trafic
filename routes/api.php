@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
@@ -12,6 +13,8 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:lo
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/follow/{user}', [FollowController::class, 'store'])->whereNumber('user')->name('follows.store');
     Route::delete('/follow/{user}', [FollowController::class, 'destroy'])->whereNumber('user')->name('follows.destroy');
+
+    Route::get('/feed', FeedController::class)->name('feed');
 
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
     Route::get('/posts/{post}', [PostController::class, 'show'])->whereNumber('post')->name('posts.show');
