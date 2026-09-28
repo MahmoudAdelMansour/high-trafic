@@ -3,6 +3,19 @@ x-app: &app
     context: .
     dockerfile: docker/php/Dockerfile
   env_file: .env
+  # Container networking always wins over whatever the local .env says.
+  environment:
+    DB_CONNECTION: mysql
+    DB_HOST: mysql
+    DB_PORT: 3306
+    DB_DATABASE: high_trafic
+    DB_USERNAME: laravel
+    DB_PASSWORD: secret
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
+    COMPOSER_HOME: /tmp/composer
+  # Run as the host user so the bind-mounted storage/ stays writable.
+  user: "${UID:-1000}:${GID:-1000}"
   volumes:
     - .:/var/www/html
   depends_on:
