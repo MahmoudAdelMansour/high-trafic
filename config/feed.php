@@ -76,4 +76,17 @@ return [
         'likes_counter' => 7 * 86400,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Demo Data Volume (database/seeders/FeedSeeder.php)
+    |--------------------------------------------------------------------------
+    */
+
+    'seed' => [
+        'users' => (int) env('SEED_USERS', 12000),
+        'posts' => (int) env('SEED_POSTS', 200000),
+        'follows_per_user' => (int) env('SEED_FOLLOWS_PER_USER', 30),
+        'likes' => (int) env('SEED_LIKES', 100000),
+    ],
+
 ];
