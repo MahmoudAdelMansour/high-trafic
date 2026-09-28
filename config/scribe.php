@@ -14,14 +14,13 @@ return [
     'title' => config('app.name').' API Documentation',
 
     // A short description of your API. Will be included in the docs webpage, Postman collection and OpenAPI spec.
-    'description' => '',
+    'description' => 'High-traffic news feed API: users, follows, posts, likes and a hybrid fan-out feed.',
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
     'intro_text' => <<<'INTRO'
-            This documentation aims to provide all the information you need to work with our API.
+            Every error uses the same envelope: `{ "message": "...", "code": "POST_NOT_FOUND", "errors": {} }`.
 
-            <aside>As you scroll, you'll see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile).
-            You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).</aside>
+            The feed uses cursor pagination: pass `meta.next_cursor` back as `cursor` until `meta.has_more` is false.
         INTRO,
 
     // The base URL displayed in the docs.
@@ -105,11 +104,11 @@ return [
     // How is your API authenticated? This information will be used in the displayed docs, generated examples and response calls.
     'auth' => [
         // Set this to true if ANY endpoints in your API use authentication.
-        'enabled' => false,
+        'enabled' => true,
 
         // Set this to true if your API should be authenticated by default. If so, you must also set `enabled` (above) to true.
         // You can then use @unauthenticated or @authenticated on individual endpoints to change their status from the default.
-        'default' => false,
+        'default' => true,
 
         // Where is the auth value meant to be sent in a request?
         'in' => AuthIn::BEARER->value,
@@ -123,10 +122,10 @@ return [
 
         // Placeholder your users will see for the auth parameter in the example requests.
         // Set this to null if you want Scribe to use a random value as placeholder instead.
-        'placeholder' => '{YOUR_AUTH_KEY}',
+        'placeholder' => '{YOUR_TOKEN}',
 
         // Any extra authentication-related info for your users. Markdown and HTML are supported.
-        'extra_info' => 'You can retrieve your token by visiting your dashboard and clicking <b>Generate API token</b>.',
+        'extra_info' => 'Get a Sanctum token from <code>POST /api/register</code> or <code>POST /api/login</code>.',
     ],
 
     // Example requests for each endpoint will be shown in each of these languages.
@@ -232,15 +231,11 @@ return [
         'bodyParameters' => [
             ...Defaults::BODY_PARAMETERS_STRATEGIES,
         ],
+        // Response calls are disabled: examples come from @response annotations,
+        // so generating the docs never writes to the database.
         'responses' => configureStrategy(
             Defaults::RESPONSES_STRATEGIES,
-            Strategies\Responses\ResponseCalls::withSettings(
-                only: ['GET *'],
-                // Recommended: disable debug mode in response calls to avoid error stack traces in responses
-                config: [
-                    'app.debug' => false,
-                ]
-            )
+            Strategies\Responses\ResponseCalls::withSettings(only: [])
         ),
         'responseFields' => [
             ...Defaults::RESPONSE_FIELDS_STRATEGIES,

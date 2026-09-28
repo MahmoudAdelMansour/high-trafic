@@ -22,6 +22,8 @@ class FeedController extends Controller
      *
      * @queryParam cursor integer The `next_cursor` of the previous page. Example: 960
      * @queryParam limit integer Page size, 1 to 50. Defaults to 20. Example: 20
+     *
+     * @response {"data": [{"id": 961, "content": "Hello world", "created_at": "2026-09-28T12:00:00+00:00", "author": {"id": 2, "name": "Mohammed"}, "likes_count": 3, "liked_by_me": true}], "meta": {"next_cursor": 961, "has_more": true}}
      */
     public function __invoke(FeedRequest $request): AnonymousResourceCollection
     {

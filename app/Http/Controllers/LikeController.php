@@ -19,6 +19,9 @@ class LikeController extends Controller
      * Idempotent: liking twice counts once.
      *
      * @urlParam post integer required The post id. Example: 1
+     *
+     * @response 204 scenario="Done"
+     * @response 404 {"message": "Post not found", "code": "POST_NOT_FOUND", "errors": {}}
      */
     public function store(Request $request, int $post): Response
     {
@@ -33,6 +36,9 @@ class LikeController extends Controller
      * Idempotent: unliking a post you never liked is a no-op.
      *
      * @urlParam post integer required The post id. Example: 1
+     *
+     * @response 204 scenario="Done"
+     * @response 404 {"message": "Post not found", "code": "POST_NOT_FOUND", "errors": {}}
      */
     public function destroy(Request $request, int $post): Response
     {
