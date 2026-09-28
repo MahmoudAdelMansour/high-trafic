@@ -1,5 +1,7 @@
 <?php
 
+use App\Exceptions\ApiExceptionRenderer;
+use App\Http\Middleware\ForceJsonResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,10 +15,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->prependToGroup('api', ForceJsonResponse::class);
+        $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return (new ApiExceptionRenderer((bool) config('app.debug')))->render($e);
+        });
     })->create();
