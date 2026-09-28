@@ -34,6 +34,16 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user has enough followers to skip fan-out on write.
+     */
+    public function celebrity(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'followers_count' => config('feed.celebrity_threshold'),
+        ]);
+    }
+
+    /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static
