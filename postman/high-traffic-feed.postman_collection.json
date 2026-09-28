@@ -1,0 +1,3409 @@
+{
+  "info": {
+    "_postman_id": "6d74dd4b-51e6-59be-9602-954976306866",
+    "name": "High-Traffic News Feed API",
+    "description": "Scenario collection: run top to bottom (Collection Runner or `npx newman run postman/high-traffic-feed.postman_collection.json`).\n\nSet `base_url` to `http://localhost:8080/api` (Docker) or `http://localhost:8000/api` (`php artisan serve`). Tokens, ids and cursors are chained through collection variables automatically.\n\nEvery error has the same envelope: `{ message, code, errors }`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "description": "Registers two fresh users every run (random emails), so the collection works on an empty or seeded database.",
+      "item": [
+        {
+          "name": "Register Ahmed (reader)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "register"
+              ]
+            },
+            "description": "Creates the reader. Saves `ahmed_token` and `ahmed_id`.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed\",\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"secret-password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set(\"ahmed_token\", j.token);",
+                  "pm.collectionVariables.set(\"ahmed_id\", j.data.id);",
+                  "pm.collectionVariables.set(\"ahmed_email\", j.data.email);",
+                  "pm.test(\"Returns user and token\", () => { pm.expect(j.token).to.be.a(\"string\"); pm.expect(j.data.followers_count).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                },
+                "description": "Creates the reader. Saves `ahmed_token` and `ahmed_id`.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ahmed\",\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"secret-password\"\n}"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 12005,\n    \"name\": \"Ahmed\",\n    \"email\": \"ahmed@example.com\",\n    \"followers_count\": 0,\n    \"following_count\": 0,\n    \"created_at\": \"2026-09-28T11:57:41+00:00\"\n  },\n  \"token\": \"1|sanctum-token-example\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Register Mohammed (author)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "register"
+              ]
+            },
+            "description": "Creates the author. Saves `mohammed_token` and `mohammed_id`.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mohammed\",\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"secret-password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set(\"mohammed_token\", j.token);",
+                  "pm.collectionVariables.set(\"mohammed_id\", j.data.id);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                },
+                "description": "Creates the author. Saves `mohammed_token` and `mohammed_id`.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Mohammed\",\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"secret-password\"\n}"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 12006,\n    \"name\": \"Mohammed\",\n    \"email\": \"ahmed@example.com\",\n    \"followers_count\": 0,\n    \"following_count\": 0,\n    \"created_at\": \"2026-09-28T11:57:41+00:00\"\n  },\n  \"token\": \"1|sanctum-token-example\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Register with duplicate email → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "register"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Copy\",\n  \"email\": \"{{ahmed_email}}\",\n  \"password\": \"secret-password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Error envelope with code VALIDATION_FAILED\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"VALIDATION_FAILED\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });",
+                  "pm.test(\"email error present\", () => pm.expect(pm.response.json().errors).to.have.property(\"email\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "422 Unprocessable Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Copy\",\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"secret-password\"\n}"
+                }
+              },
+              "status": "Unprocessable Content",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"The email has already been taken.\",\n  \"code\": \"VALIDATION_FAILED\",\n  \"errors\": {\n    \"email\": [\n      \"The email has already been taken.\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login Ahmed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ahmed_email}}\",\n  \"password\": \"secret-password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"ahmed_token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"secret-password\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 12005,\n    \"name\": \"Ahmed\",\n    \"email\": \"ahmed@example.com\",\n    \"followers_count\": 0,\n    \"following_count\": 0,\n    \"created_at\": \"2026-09-28T11:57:41+00:00\"\n  },\n  \"token\": \"1|sanctum-token-example\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login with wrong password → 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "Login is throttled to 5 attempts per minute per email+IP; the 6th returns 429 TOO_MANY_REQUESTS.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ahmed_email}}\",\n  \"password\": \"wrong\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error envelope with code INVALID_CREDENTIALS\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"INVALID_CREDENTIALS\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                },
+                "description": "Login is throttled to 5 attempts per minute per email+IP; the 6th returns 429 TOO_MANY_REQUESTS.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"wrong\"\n}"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"The provided credentials are incorrect\",\n  \"code\": \"INVALID_CREDENTIALS\",\n  \"errors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "No token → 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feed"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Error envelope with code UNAUTHENTICATED\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"UNAUTHENTICATED\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/feed",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "feed"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Unauthenticated\",\n  \"code\": \"UNAUTHENTICATED\",\n  \"errors\": {}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Follows",
+      "item": [
+        {
+          "name": "Ahmed follows Mohammed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/follow/{{mohammed_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "follow",
+                "{{mohammed_id}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/follow/{{mohammed_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "follow",
+                    "{{mohammed_id}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Follow again (idempotent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/follow/{{mohammed_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "follow",
+                "{{mohammed_id}}"
+              ]
+            },
+            "description": "Still one follow row; counters do not move.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/follow/{{mohammed_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "follow",
+                    "{{mohammed_id}}"
+                  ]
+                },
+                "description": "Still one follow row; counters do not move.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Follow yourself → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/follow/{{ahmed_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "follow",
+                "{{ahmed_id}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Error envelope with code CANNOT_FOLLOW_SELF\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"CANNOT_FOLLOW_SELF\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "422 Unprocessable Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/follow/{{ahmed_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "follow",
+                    "{{ahmed_id}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Unprocessable Content",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"You cannot follow yourself\",\n  \"code\": \"CANNOT_FOLLOW_SELF\",\n  \"errors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Follow unknown user → 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/follow/999999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "follow",
+                "999999999"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Error envelope with code USER_NOT_FOUND\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"USER_NOT_FOUND\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/follow/999999999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "follow",
+                    "999999999"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"User not found\",\n  \"code\": \"USER_NOT_FOUND\",\n  \"errors\": {}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Posts",
+      "item": [
+        {
+          "name": "Mohammed creates a post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            },
+            "description": "Returns immediately. Fan-out to follower feeds and notifications run on the queue (watch them in /horizon).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{mohammed_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Hello from Mohammed \\ud83d\\udc4b\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json().data;",
+                  "pm.collectionVariables.set(\"post_id\", j.id);",
+                  "pm.test(\"Author + counters\", () => { pm.expect(j.author.name).to.eql(\"Mohammed\"); pm.expect(j.likes_count).to.eql(0); pm.expect(j.liked_by_me).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts"
+                  ]
+                },
+                "description": "Returns immediately. Fan-out to follower feeds and notifications run on the queue (watch them in /horizon).",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{mohammed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Hello from Mohammed \\ud83d\\udc4b\"\n}"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 200006,\n    \"content\": \"Hello from Mohammed 👋\",\n    \"created_at\": \"2026-09-28T11:57:42+00:00\",\n    \"author\": {\n      \"id\": 12006,\n      \"name\": \"Mohammed\"\n    },\n    \"likes_count\": 0,\n    \"liked_by_me\": false\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Second post (for pagination)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{mohammed_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Second post\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"post_id_2\", pm.response.json().data.id);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{mohammed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Second post\"\n}"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 200007,\n    \"content\": \"Second post\",\n    \"created_at\": \"2026-09-28T11:57:42+00:00\",\n    \"author\": {\n      \"id\": 12006,\n      \"name\": \"Mohammed\"\n    },\n    \"likes_count\": 0,\n    \"liked_by_me\": false\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Empty content → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{mohammed_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Error envelope with code VALIDATION_FAILED\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"VALIDATION_FAILED\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "422 Unprocessable Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{mohammed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"\"\n}"
+                }
+              },
+              "status": "Unprocessable Content",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"The content field is required.\",\n  \"code\": \"VALIDATION_FAILED\",\n  \"errors\": {\n    \"content\": [\n      \"The content field is required.\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Ahmed views the post",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Has author, likes_count, liked_by_me\", () => pm.expect(pm.response.json().data).to.include.keys(\"author\", \"likes_count\", \"liked_by_me\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 200006,\n    \"content\": \"Hello from Mohammed 👋\",\n    \"created_at\": \"2026-09-28T11:57:42+00:00\",\n    \"author\": {\n      \"id\": 12006,\n      \"name\": \"Mohammed\"\n    },\n    \"likes_count\": 0,\n    \"liked_by_me\": false\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Ahmed deletes Mohammed's post → 403",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error envelope with code FORBIDDEN\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"FORBIDDEN\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "403 Forbidden",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"This action is unauthorized.\",\n  \"code\": \"FORBIDDEN\",\n  \"errors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Unknown post → 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/999999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "999999999"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Error envelope with code POST_NOT_FOUND\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"POST_NOT_FOUND\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/999999999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "999999999"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Post not found\",\n  \"code\": \"POST_NOT_FOUND\",\n  \"errors\": {}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Feed",
+      "item": [
+        {
+          "name": "Ahmed's feed (page 1, limit 1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed?limit=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feed"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Newest first. `meta.next_cursor` is saved for the next request.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set(\"next_cursor\", j.meta.next_cursor);",
+                  "pm.test(\"Newest post first\", () => pm.expect(j.data[0].id).to.eql(Number(pm.collectionVariables.get(\"post_id_2\"))));",
+                  "pm.test(\"Has more\", () => pm.expect(j.meta.has_more).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/feed?limit=1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "feed"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "Newest first. `meta.next_cursor` is saved for the next request.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 200007,\n      \"content\": \"Second post\",\n      \"created_at\": \"2026-09-28T11:57:42+00:00\",\n      \"author\": {\n        \"id\": 12006,\n        \"name\": \"Mohammed\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    }\n  ],\n  \"meta\": {\n    \"next_cursor\": 200007,\n    \"has_more\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Ahmed's feed (page 2 via cursor)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed?limit=1&cursor={{next_cursor}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feed"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "1"
+                },
+                {
+                  "key": "cursor",
+                  "value": "{{next_cursor}}"
+                }
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Older post, no duplicate\", () => pm.expect(j.data[0].id).to.eql(Number(pm.collectionVariables.get(\"post_id\"))));",
+                  "pm.test(\"End of feed\", () => pm.expect(j.meta.has_more).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/feed?limit=1&cursor={{next_cursor}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "feed"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "1"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "{{next_cursor}}"
+                    }
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 200006,\n      \"content\": \"Hello from Mohammed 👋\",\n      \"created_at\": \"2026-09-28T11:57:42+00:00\",\n      \"author\": {\n        \"id\": 12006,\n        \"name\": \"Mohammed\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    }\n  ],\n  \"meta\": {\n    \"next_cursor\": null,\n    \"has_more\": false\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mohammed's feed is empty (follows nobody)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feed"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{mohammed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Own posts are not in own feed\", () => pm.expect(pm.response.json().data).to.have.length(0));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/feed",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "feed"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{mohammed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [],\n  \"meta\": {\n    \"next_cursor\": null,\n    \"has_more\": false\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "limit=51 → 422",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed?limit=51",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feed"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "51"
+                }
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Error envelope with code VALIDATION_FAILED\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"VALIDATION_FAILED\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "422 Unprocessable Content",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/feed?limit=51",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "feed"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "51"
+                    }
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Unprocessable Content",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"The limit field must not be greater than 50.\",\n  \"code\": \"VALIDATION_FAILED\",\n  \"errors\": {\n    \"limit\": [\n      \"The limit field must not be greater than 50.\"\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Likes",
+      "item": [
+        {
+          "name": "Ahmed likes the post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}/like",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}",
+                "like"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id}}/like",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id}}",
+                    "like"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Like again (idempotent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}/like",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}",
+                "like"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id}}/like",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id}}",
+                    "like"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Post shows 1 like, liked_by_me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json().data;",
+                  "pm.test(\"Double like counted once\", () => pm.expect(j.likes_count).to.eql(1));",
+                  "pm.test(\"liked_by_me\", () => pm.expect(j.liked_by_me).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 200006,\n    \"content\": \"Hello from Mohammed 👋\",\n    \"created_at\": \"2026-09-28T11:57:42+00:00\",\n    \"author\": {\n      \"id\": 12006,\n      \"name\": \"Mohammed\"\n    },\n    \"likes_count\": 1,\n    \"liked_by_me\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mohammed sees liked_by_me = false",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{mohammed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"liked_by_me is per user\", () => pm.expect(pm.response.json().data.liked_by_me).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{mohammed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 200006,\n    \"content\": \"Hello from Mohammed 👋\",\n    \"created_at\": \"2026-09-28T11:57:42+00:00\",\n    \"author\": {\n      \"id\": 12006,\n      \"name\": \"Mohammed\"\n    },\n    \"likes_count\": 1,\n    \"liked_by_me\": false\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Ahmed unlikes",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}/like",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}",
+                "like"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id}}/like",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id}}",
+                    "like"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Unlike again (no-op)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}/like",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}",
+                "like"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id}}/like",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id}}",
+                    "like"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Back to 0 likes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"likes_count 0\", () => pm.expect(pm.response.json().data.likes_count).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 200006,\n    \"content\": \"Hello from Mohammed 👋\",\n    \"created_at\": \"2026-09-28T11:57:42+00:00\",\n    \"author\": {\n      \"id\": 12006,\n      \"name\": \"Mohammed\"\n    },\n    \"likes_count\": 0,\n    \"liked_by_me\": false\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Delete & unfollow",
+      "item": [
+        {
+          "name": "Mohammed deletes his second post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id_2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id_2}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{mohammed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id_2}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id_2}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{mohammed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Deleted post → 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id_2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id_2}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Error envelope with code POST_NOT_FOUND\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"POST_NOT_FOUND\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id_2}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id_2}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Post not found\",\n  \"code\": \"POST_NOT_FOUND\",\n  \"errors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Deleted post is skipped in the feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feed"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const ids = pm.response.json().data.map(p => p.id);",
+                  "pm.test(\"Deleted id absent\", () => pm.expect(ids).to.not.include(Number(pm.collectionVariables.get(\"post_id_2\"))));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/feed",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "feed"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 200006,\n      \"content\": \"Hello from Mohammed 👋\",\n      \"created_at\": \"2026-09-28T11:57:42+00:00\",\n      \"author\": {\n        \"id\": 12006,\n        \"name\": \"Mohammed\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    }\n  ],\n  \"meta\": {\n    \"next_cursor\": null,\n    \"has_more\": false\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Like deleted post → 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id_2}}/like",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id_2}}",
+                "like"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Error envelope with code POST_NOT_FOUND\", () => { const j = pm.response.json(); pm.expect(j.code).to.eql(\"POST_NOT_FOUND\"); pm.expect(j).to.have.keys(\"message\", \"code\", \"errors\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/posts/{{post_id_2}}/like",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "posts",
+                    "{{post_id_2}}",
+                    "like"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Post not found\",\n  \"code\": \"POST_NOT_FOUND\",\n  \"errors\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Ahmed unfollows Mohammed",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/follow/{{mohammed_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "follow",
+                "{{mohammed_id}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/follow/{{mohammed_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "follow",
+                    "{{mohammed_id}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Unfollow again (idempotent)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/follow/{{mohammed_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "follow",
+                "{{mohammed_id}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ahmed_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/follow/{{mohammed_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "follow",
+                    "{{mohammed_id}}"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{ahmed_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Seeded data (run make seed first)",
+      "description": "Needs the FeedSeeder data set. Skip this folder on an empty database.",
+      "item": [
+        {
+          "name": "Login demo user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo@example.com\",\n  \"password\": \"password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"demo_token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"demo@example.com\",\n  \"password\": \"password\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Demo User\",\n    \"email\": \"ahmed@example.com\",\n    \"followers_count\": 0,\n    \"following_count\": 33,\n    \"created_at\": \"2026-09-28T11:55:06+00:00\"\n  },\n  \"token\": \"1|sanctum-token-example\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Demo feed (hybrid: pushed posts + celebrity merge)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed?limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feed"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "First call rebuilds `feed:{demo}` in Redis from MySQL; call it twice to compare cold vs warm response time.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{demo_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set(\"demo_cursor\", j.meta.next_cursor);",
+                  "pm.test(\"20 posts\", () => pm.expect(j.data).to.have.length(20));",
+                  "pm.test(\"Sorted newest first\", () => { const ids = j.data.map(p => p.id); pm.expect(ids).to.eql([...ids].sort((a, b) => b - a)); });",
+                  "pm.test(\"Fast response\", () => pm.expect(pm.response.responseTime).to.be.below(1000));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/feed?limit=20",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "feed"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                },
+                "description": "First call rebuilds `feed:{demo}` in Redis from MySQL; call it twice to compare cold vs warm response time.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{demo_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 200001,\n      \"content\": \"docker smoke\",\n      \"created_at\": \"2026-09-28T11:55:44+00:00\",\n      \"author\": {\n        \"id\": 285,\n        \"name\": \"Sasha Mante\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199997,\n      \"content\": \"Amet et libero ut deleniti ipsum architecto.\",\n      \"created_at\": \"2026-09-28T11:54:26+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199987,\n      \"content\": \"Nobis sit veniam fugit qui sapiente non illum. Vel et et dolores aliquam. Autem atque perspiciatis accusantium temporibus soluta.\",\n      \"created_at\": \"2026-09-28T11:52:16+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199984,\n      \"content\": \"Veritatis ut alias culpa esse voluptas. Cum tempore optio omnis quas eum iste quia aliquam. Eveniet et eos nihil.\",\n      \"created_at\": \"2026-09-28T11:51:37+00:00\",\n      \"author\": {\n        \"id\": 716,\n        \"name\": \"Pansy Sanford\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199981,\n      \"content\": \"Dolores cum et et recusandae eum facilis. Aperiam ratione iste et quaerat quia amet. Est totam quisquam dolore ut.\",\n      \"created_at\": \"2026-09-28T11:50:58+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199977,\n      \"content\": \"Quia cumque beatae consequuntur illum. Atque vel voluptatem eaque voluptatibus nulla. Vero modi facere quia autem voluptatum voluptatum omnis quaerat.\",\n      \"created_at\": \"2026-09-28T11:50:06+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199968,\n      \"content\": \"Voluptatem voluptates sed vel et maiores rerum.\",\n      \"created_at\": \"2026-09-28T11:48:10+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199945,\n      \"content\": \"Sunt eius officiis omnis.\",\n      \"created_at\": \"2026-09-28T11:43:12+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199940,\n      \"content\": \"Qui commodi neque perspiciatis quo ut labore molestiae. Vitae ut reprehenderit et eos aperiam sunt tenetur. Eaque ipsam ipsum iusto ad.\",\n      \"created_at\": \"2026-09-28T11:42:07+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199934,\n      \"content\": \"Magnam id id amet sequi odio. Veritatis dolore sed enim rerum ratione eaque. Modi reiciendis ut fuga nisi numquam quia cum.\",\n      \"created_at\": \"2026-09-28T11:40:49+00:00\",\n      \"author\": {\n        \"id\": 6898,\n        \"name\": \"Dr. Raoul Labadie\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199913,\n      \"content\": \"Nobis facere odit iusto occaecati in aut. Voluptate quae et omnis dolorum quia est.\",\n      \"created_at\": \"2026-09-28T11:36:17+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199912,\n      \"content\": \"Assumenda mollitia mollitia voluptatem debitis. Quis voluptatem ut culpa soluta voluptas voluptas velit.\",\n      \"created_at\": \"2026-09-28T11:36:04+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199878,\n      \"content\": \"Quia ea rem et minima. Soluta expedita odit ipsam quasi voluptates. Sint dicta accusamus eum dolor enim iste. Voluptatem quisquam delectus rerum.\",\n      \"created_at\": \"2026-09-28T11:28:43+00:00\",\n      \"author\": {\n        \"id\": 7743,\n        \"name\": \"Dr. Bethel Wiza\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199804,\n      \"content\": \"Facilis accusamus quia reprehenderit animi possimus nisi. Nisi ut quos ab aut placeat laudantium cumque. Sed aut veniam quis. Repellendus ea nihil veritatis repudiandae nisi magni.\",\n      \"created_at\": \"2026-09-28T11:12:44+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199801,\n      \"content\": \"Doloribus qui dignissimos voluptas. Ullam deserunt quia est consectetur alias. Aut aut ut doloribus possimus sint reiciendis ducimus.\",\n      \"created_at\": \"2026-09-28T11:12:06+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199777,\n      \"content\": \"Repellat enim quia optio a iste. Id qui beatae et. Sunt quis dignissimos incidunt culpa.\",\n      \"created_at\": \"2026-09-28T11:06:54+00:00\",\n      \"author\": {\n        \"id\": 3,\n        \"name\": \"Celebrity 2\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199737,\n      \"content\": \"Sequi qui expedita incidunt fugit hic.\",\n      \"created_at\": \"2026-09-28T10:58:16+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199727,\n      \"content\": \"Fuga tempora fuga et sed. Itaque mollitia magni veritatis ullam occaecati vitae sed. Accusamus id reiciendis voluptas non.\",\n      \"created_at\": \"2026-09-28T10:56:06+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199724,\n      \"content\": \"Nemo rerum vero sunt qui rerum unde quia. Deserunt dolorem perferendis doloribus maxime non eum autem expedita. Assumenda labore esse soluta omnis amet sit vitae.\",\n      \"created_at\": \"2026-09-28T10:55:28+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199717,\n      \"content\": \"Voluptas natus voluptatem omnis fuga qui. Nostrum nesciunt in praesentium reprehenderit temporibus.\",\n      \"created_at\": \"2026-09-28T10:53:57+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    }\n  ],\n  \"meta\": {\n    \"next_cursor\": 199717,\n    \"has_more\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Demo feed page 2",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feed?limit=20&cursor={{demo_cursor}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feed"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "cursor",
+                  "value": "{{demo_cursor}}"
+                }
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{demo_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"All ids below the cursor\", () => pm.response.json().data.forEach(p => pm.expect(p.id).to.be.below(Number(pm.collectionVariables.get(\"demo_cursor\")))));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/feed?limit=20&cursor={{demo_cursor}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "feed"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "{{demo_cursor}}"
+                    }
+                  ]
+                },
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{demo_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 199704,\n      \"content\": \"Perspiciatis aut assumenda enim consequuntur. Saepe dolor voluptatem dolorem quibusdam ab eos. Soluta quibusdam pariatur ut est quia et.\",\n      \"created_at\": \"2026-09-28T10:51:08+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199700,\n      \"content\": \"Voluptatem voluptas aut optio repellat corrupti in ea. Dignissimos rem et non voluptate. Nulla provident eos voluptatem doloribus id. Voluptatem et eum illo et aliquid rem repellat sint.\",\n      \"created_at\": \"2026-09-28T10:50:17+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 2,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199667,\n      \"content\": \"Cum vel minus reprehenderit accusamus quaerat iure asperiores totam. Ab voluptate fugiat velit dolorem nostrum consequatur eum. Pariatur voluptas exercitationem vel est non. Numquam nobis fugit sunt quam suscipit aut dignissimos.\",\n      \"created_at\": \"2026-09-28T10:43:09+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199628,\n      \"content\": \"Illo officiis reprehenderit blanditiis non perspiciatis. Sed blanditiis saepe voluptatem. Voluptatem voluptatem sit ut consequuntur accusamus voluptatem. Est eveniet laborum pariatur.\",\n      \"created_at\": \"2026-09-28T10:34:43+00:00\",\n      \"author\": {\n        \"id\": 3,\n        \"name\": \"Celebrity 2\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199595,\n      \"content\": \"Libero dolor quo sit voluptatem natus. Ut rerum sunt cum consectetur nisi distinctio ea maiores. Natus vel reiciendis repudiandae unde occaecati quibusdam et et.\",\n      \"created_at\": \"2026-09-28T10:27:36+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199586,\n      \"content\": \"Iusto et eos totam impedit. Delectus voluptas excepturi totam qui ducimus qui molestiae quod. Provident quos perferendis repudiandae vero.\",\n      \"created_at\": \"2026-09-28T10:25:39+00:00\",\n      \"author\": {\n        \"id\": 3,\n        \"name\": \"Celebrity 2\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199573,\n      \"content\": \"Illum quisquam ut in sint expedita. Quas odit impedit officiis sed suscipit. Veritatis maiores eligendi explicabo. Saepe officia quia deleniti error. Dolor iusto accusantium nisi saepe. Nihil quia ipsa et possimus consectetur accusamus.\",\n      \"created_at\": \"2026-09-28T10:22:51+00:00\",\n      \"author\": {\n        \"id\": 3,\n        \"name\": \"Celebrity 2\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199568,\n      \"content\": \"Delectus id in neque. Libero dolorem neque dolore esse odit molestias totam.\",\n      \"created_at\": \"2026-09-28T10:21:46+00:00\",\n      \"author\": {\n        \"id\": 3,\n        \"name\": \"Celebrity 2\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199534,\n      \"content\": \"Quo doloribus fuga soluta dolorem omnis. Impedit enim provident autem culpa facilis in impedit sed. Consequatur minima ex odio. Maiores ex culpa consequatur.\",\n      \"created_at\": \"2026-09-28T10:14:25+00:00\",\n      \"author\": {\n        \"id\": 3,\n        \"name\": \"Celebrity 2\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199509,\n      \"content\": \"Fugiat sit non qui cumque qui atque quis debitis.\",\n      \"created_at\": \"2026-09-28T10:09:01+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199503,\n      \"content\": \"Rerum sint non qui fugit quas. Eum omnis sit iste assumenda. Optio ex nesciunt possimus est maiores. Soluta fugit facilis quisquam quia quod qui dolorum.\",\n      \"created_at\": \"2026-09-28T10:07:43+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199496,\n      \"content\": \"Est rerum totam doloribus quas laudantium. Aut doloribus neque quia ratione corrupti et dolorem praesentium. Libero at nesciunt dicta occaecati mollitia. Quis nobis dicta optio ut in nesciunt.\",\n      \"created_at\": \"2026-09-28T10:06:13+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199464,\n      \"content\": \"Quaerat sit minus neque sit aut.\",\n      \"created_at\": \"2026-09-28T09:59:18+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199456,\n      \"content\": \"Sit magnam omnis beatae officiis.\",\n      \"created_at\": \"2026-09-28T09:57:34+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199426,\n      \"content\": \"Id ex sapiente explicabo dignissimos aspernatur distinctio.\",\n      \"created_at\": \"2026-09-28T09:51:06+00:00\",\n      \"author\": {\n        \"id\": 3,\n        \"name\": \"Celebrity 2\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199345,\n      \"content\": \"Ut non dicta ut eligendi modi. Quae soluta officia est pariatur maiores. Dignissimos illo cumque temporibus in inventore tenetur.\",\n      \"created_at\": \"2026-09-28T09:33:36+00:00\",\n      \"author\": {\n        \"id\": 4013,\n        \"name\": \"Mrs. Bonita Reichel I\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199318,\n      \"content\": \"Incidunt modi repellat nostrum autem et voluptatem. Occaecati omnis odio laboriosam corrupti neque aut voluptatibus. Ipsa perspiciatis velit aut aspernatur ipsam distinctio. Minus est animi ea vel et. Corrupti culpa nesciunt laboriosam rerum.\",\n      \"created_at\": \"2026-09-28T09:27:46+00:00\",\n      \"author\": {\n        \"id\": 2,\n        \"name\": \"Celebrity 1\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199315,\n      \"content\": \"Sed natus asperiores facilis sapiente at eligendi. Asperiores corrupti ut sapiente sequi doloribus. Voluptatem in voluptatibus quia nulla. Cupiditate sint maiores quia molestiae eligendi tempore qui.\",\n      \"created_at\": \"2026-09-28T09:27:07+00:00\",\n      \"author\": {\n        \"id\": 4,\n        \"name\": \"Celebrity 3\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199264,\n      \"content\": \"Dolorem sit odio consequatur. Cumque dolores autem harum earum facilis. Aut et dolores quasi necessitatibus eum.\",\n      \"created_at\": \"2026-09-28T09:16:06+00:00\",\n      \"author\": {\n        \"id\": 3,\n        \"name\": \"Celebrity 2\"\n      },\n      \"likes_count\": 1,\n      \"liked_by_me\": false\n    },\n    {\n      \"id\": 199258,\n      \"content\": \"Dolor inventore dicta incidunt mollitia voluptatem et. Laudantium illum soluta sit commodi soluta voluptatem. Similique eum sit illum et sit molestiae.\",\n      \"created_at\": \"2026-09-28T09:14:48+00:00\",\n      \"author\": {\n        \"id\": 3,\n        \"name\": \"Celebrity 2\"\n      },\n      \"likes_count\": 0,\n      \"liked_by_me\": false\n    }\n  ],\n  \"meta\": {\n    \"next_cursor\": 199258,\n    \"has_more\": true\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "ahmed_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ahmed_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ahmed_email",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mohammed_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mohammed_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "post_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "post_id_2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "next_cursor",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "demo_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "demo_cursor",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
