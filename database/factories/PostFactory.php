@@ -20,7 +20,7 @@ class PostFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'content' => fake()->realText(fake()->numberBetween(20, 280)),
+            'content' => fake()->text(fake()->numberBetween(20, 280)),
         ];
     }
 }
