@@ -1,7 +1,9 @@
 <?php
 
+use App\Data\CreatePostData;
 use App\Models\User;
 use App\Repositories\FollowRepository;
+use App\Services\PostService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -40,4 +42,15 @@ function follow(User|iterable $followers, User $followee): void
     }
 
     $followee->refresh();
+}
+
+/**
+ * Publish a post through PostService so the timeline, PostCreated event and
+ * (sync) fan-out all run exactly as in production.
+ */
+function publish(User $author, ?string $content = null): int
+{
+    return app(PostService::class)
+        ->create($author, new CreatePostData($author->id, $content ?? fake()->sentence()))
+        ->id;
 }
