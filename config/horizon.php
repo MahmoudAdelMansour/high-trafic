@@ -98,6 +98,8 @@ return [
 
     'waits' => [
         'redis:default' => 60,
+        'redis:feed' => 10,
+        'redis:notifications' => 120,
     ],
 
     /*
@@ -197,16 +199,48 @@ return [
     */
 
     'defaults' => [
-        'supervisor-1' => [
+        // Feed fan-out: the latency users notice, so it gets the most workers.
+        'supervisor-feed' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            'queue' => ['feed'],
             'balance' => 'auto',
-            'autoScalingStrategy' => 'time',
+            'autoScalingStrategy' => 'size',
+            'minProcesses' => 1,
+            'maxProcesses' => 2,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 128,
+            'tries' => 3,
+            'timeout' => 60,
+            'nice' => 0,
+        ],
+
+        // Notifications live on their own supervisor so a backlog here never
+        // delays the feed. Celebrity posts use the low-priority queue.
+        'supervisor-notifications' => [
+            'connection' => 'redis',
+            'queue' => ['notifications', 'notifications-low'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'size',
+            'minProcesses' => 1,
             'maxProcesses' => 1,
             'maxTime' => 0,
             'maxJobs' => 0,
             'memory' => 128,
-            'tries' => 1,
+            'tries' => 3,
+            'timeout' => 60,
+            'nice' => 0,
+        ],
+
+        'supervisor-default' => [
+            'connection' => 'redis',
+            'queue' => ['default'],
+            'balance' => 'simple',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 128,
+            'tries' => 3,
             'timeout' => 60,
             'nice' => 0,
         ],
@@ -214,16 +248,27 @@ return [
 
     'environments' => [
         'production' => [
-            'supervisor-1' => [
-                'maxProcesses' => 10,
+            'supervisor-feed' => [
+                'maxProcesses' => 20,
+                'balanceMaxShift' => 2,
+                'balanceCooldown' => 3,
+            ],
+            'supervisor-notifications' => [
+                'maxProcesses' => 8,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
+            ],
+            'supervisor-default' => [
+                'maxProcesses' => 3,
             ],
         ],
 
         'local' => [
-            'supervisor-1' => [
+            'supervisor-feed' => [
                 'maxProcesses' => 3,
+            ],
+            'supervisor-notifications' => [
+                'maxProcesses' => 2,
             ],
         ],
     ],
