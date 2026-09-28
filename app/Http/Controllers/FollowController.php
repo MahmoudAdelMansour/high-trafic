@@ -19,6 +19,10 @@ class FollowController extends Controller
      * Idempotent. Returns 422 when trying to follow yourself.
      *
      * @urlParam user integer required The id of the user to follow. Example: 2
+     *
+     * @response 204 scenario="Followed"
+     * @response 422 {"message": "You cannot follow yourself", "code": "CANNOT_FOLLOW_SELF", "errors": {}}
+     * @response 404 {"message": "User not found", "code": "USER_NOT_FOUND", "errors": {}}
      */
     public function store(Request $request, int $user): Response
     {
@@ -33,6 +37,8 @@ class FollowController extends Controller
      * Idempotent.
      *
      * @urlParam user integer required The id of the user to unfollow. Example: 2
+     *
+     * @response 204 scenario="Unfollowed"
      */
     public function destroy(Request $request, int $user): Response
     {
